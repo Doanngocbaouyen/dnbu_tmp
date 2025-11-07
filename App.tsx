@@ -1,15 +1,29 @@
 import React from "react";
-import { SafeAreaView, View, Text, StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaView, View, Text, StyleSheet } from "react-native";
+import ExpenseItem from "./components/ExpenseItem";
 
 export default function App() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
+        {/* Tiêu đề */}
         <Text style={styles.title}>EXPENSE TRACKER</Text>
 
-        <View style={styles.content}>
-          <Text style={styles.placeholder}>Chưa có dữ liệu</Text>
+        {/* Danh sách test hiển thị Item */}
+        <View style={styles.list}>
+          <ExpenseItem
+            title="Đi chợ"
+            amount={150000}
+            createdAt="08/11/2025"
+            type="Chi"
+          />
+          <ExpenseItem
+            title="Lương tháng"
+            amount={10000000}
+            createdAt="01/11/2025"
+            type="Thu"
+          />
         </View>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -19,20 +33,17 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    padding: 16,
+    backgroundColor: "#ffffff",
+    alignItems: "center",
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 20,
+    marginTop: 10,
   },
-  content: {
-    flex: 1,
-  },
-  placeholder: {
-    color: "#888",
-    textAlign: "center",
+  list: {
+    width: "100%",
+    paddingHorizontal: 20,
+    marginTop: 20,
   },
 });
