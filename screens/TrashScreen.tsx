@@ -1,52 +1,58 @@
 import React, { useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { GetDeletedTasks, RestoreTask, HardDeleteTask } from "../database/database";
+import { InitDB, DeleteTask } from "../database/database";
+import * as SQLite from "expo-sqlite";
 import { useFocusEffect } from "@react-navigation/native";
+
+const db = SQLite.openDatabaseSync("tasks.db");
 
 export default function TrashScreen({ navigation }: any) {
   const [deletedTasks, setDeletedTasks] = useState<any[]>([]);
+  const [searchText, setSearchText] = useState("");
+  const [filteredTasks, setFilteredTasks] = useState<any[]>([]);
 
+  // Load danh sách task đã xóa
   const loadDeletedTasks = async () => {
-    const rows = await GetDeletedTasks();
+    await InitDB();
+    const rows = await db.getAllAsync(
+      "SELECT * FROM tasks WHERE deletedAt IS NOT NULL ORDER BY deletedAt DESC"
+    );
     setDeletedTasks(rows);
+    filterTasks(rows, searchText);
   };
 
+  // Filter theo từ khóa
+  const filterTasks = (tasksList: any[], keyword: string) => {
+    if (!keyword) {
+      setFilteredTasks(tasksList);
+    } else {
+      const filtered = tasksList.filter((item) =>
+        item.title.toLowerCase().includes(keyword.toLowerCase())
+      );
+      setFilteredTasks(filtered);
+    }
+  };
+
+  // Reload khi quay lại screen
   useFocusEffect(
     React.useCallback(() => {
       loadDeletedTasks();
     }, [])
   );
 
-  const confirmRestore = (id: number) => {
+  // Xoá hoàn toàn task
+  const deleteForever = (id: number) => {
     Alert.alert(
-      "Phục hồi khoản chi",
-      "Bạn có chắc chắn muốn phục hồi khoản này?",
-      [
-        { text: "Huỷ", style: "cancel" },
-        {
-          text: "Phục hồi",
-          style: "default",
-          onPress: async () => {
-            await RestoreTask(id);
-            loadDeletedTasks();
-          },
-        },
-      ]
-    );
-  };
-
-  const confirmHardDelete = (id: number) => {
-    Alert.alert(
-      "Xoá hẳn khoản chi",
-      "Bạn có chắc chắn muốn xoá hẳn khoản này? Không thể phục hồi.",
+      "Xoá vĩnh viễn",
+      "Bạn có chắc chắn muốn xoá khoản này vĩnh viễn?",
       [
         { text: "Huỷ", style: "cancel" },
         {
           text: "Xoá",
           style: "destructive",
           onPress: async () => {
-            await HardDeleteTask(id);
+            await db.runAsync("DELETE FROM tasks WHERE id = ?", [id]);
             loadDeletedTasks();
           },
         },
@@ -58,21 +64,27 @@ export default function TrashScreen({ navigation }: any) {
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Trash</Text>
 
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Tìm kiếm trong thùng rác..."
+        value={searchText}
+        onChangeText={(text) => {
+          setSearchText(text);
+          filterTasks(deletedTasks, text);
+        }}
+      />
+
       <FlatList
-        data={deletedTasks}
+        data={filteredTasks}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text style={styles.itemText}>{item.title} - {item.amount} đ</Text>
-            <View style={styles.btnGroup}>
-              <TouchableOpacity style={styles.restoreBtn} onPress={() => confirmRestore(item.id)}>
-                <Text style={styles.btnText}>Restore</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.deleteBtn} onPress={() => confirmHardDelete(item.id)}>
-                <Text style={styles.btnText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          <TouchableOpacity
+            style={styles.item}
+            onPress={() => deleteForever(item.id)}
+          >
+            <Text style={styles.itemTitle}>{item.title}</Text>
+            <Text style={styles.itemAmount}>{item.amount} đ</Text>
+          </TouchableOpacity>
         )}
       />
     </SafeAreaView>
@@ -80,26 +92,26 @@ export default function TrashScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fff" },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
+  container: { flex: 1, alignItems: "center", paddingTop: 20 },
+  title: { fontSize: 22, fontWeight: "bold" },
+  searchInput: {
+    width: "90%",
+    borderWidth: 1,
+    borderColor: "#aaa",
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 20,
+    marginBottom: 10,
+  },
   item: {
+    width: "90%",
     backgroundColor: "#f2f2f2",
     padding: 12,
     borderRadius: 8,
-    marginBottom: 10,
+    marginTop: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
-  itemText: { fontSize: 16, marginBottom: 8 },
-  btnGroup: { flexDirection: "row", justifyContent: "flex-end" },
-  restoreBtn: {
-    backgroundColor: "#34C759",
-    padding: 8,
-    borderRadius: 6,
-    marginRight: 8,
-  },
-  deleteBtn: {
-    backgroundColor: "#FF3B30",
-    padding: 8,
-    borderRadius: 6,
-  },
-  btnText: { color: "#fff", fontWeight: "bold" },
+  itemTitle: { fontSize: 16 },
+  itemAmount: { fontSize: 16, fontWeight: "bold" },
 });
