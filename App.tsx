@@ -6,6 +6,7 @@ import HomeScreen from "./screens/HomeScreen";
 import AddExpenseScreen from "./screens/AddTaskScreen";
 import { InitDB } from "./database/database";
 import EditTaskScreen from "./screens/EditTaskScreen";
+import TrashScreen from "./screens/TrashScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -21,6 +22,7 @@ export default function App() {
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="AddExpense" component={AddExpenseScreen} />
           <Stack.Screen name="EditExpense" component={EditTaskScreen} />
+          <Stack.Screen name="Trash" component={TrashScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

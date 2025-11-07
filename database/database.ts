@@ -49,4 +49,25 @@ export const DeleteTask = async (id: number) => {
   console.log("✅ Task deleted (soft) successfully");
 };
 
+// Lấy tất cả task đã xóa
+export const GetDeletedTasks = async () => {
+  const rows = await db.getAllAsync(
+    `SELECT * FROM tasks WHERE deletedAt IS NOT NULL ORDER BY deletedAt DESC`
+  );
+  return rows;
+};
+
+// Hard delete (xóa hẳn)
+export const HardDeleteTask = async (id: number) => {
+  await db.runAsync(`DELETE FROM tasks WHERE id = ?`, [id]);
+  console.log("✅ Task permanently deleted");
+};
+
+// Phục hồi task (restore)
+export const RestoreTask = async (id: number) => {
+  await db.runAsync(`UPDATE tasks SET deletedAt = NULL WHERE id = ?`, [id]);
+  console.log("✅ Task restored successfully");
+};
+
+
 export default db;
