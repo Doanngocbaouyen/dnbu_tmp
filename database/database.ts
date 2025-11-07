@@ -11,7 +11,8 @@ export const InitDB = async () => {
       title TEXT NOT NULL,
       amount REAL NOT NULL,
       type TEXT NOT NULL,
-      createdAt TEXT NOT NULL
+      createdAt TEXT NOT NULL,
+      deletedAt TEXT
     );
   `);
 };
@@ -42,5 +43,10 @@ export const UpdateTask = async (
   );
 };
 
+export const DeleteTask = async (id: number) => {
+  const deletedAt = new Date().toISOString();
+  await db.runAsync(`UPDATE tasks SET deletedAt = ? WHERE id = ?`, [deletedAt, id]);
+  console.log("✅ Task deleted (soft) successfully");
+};
 
 export default db;

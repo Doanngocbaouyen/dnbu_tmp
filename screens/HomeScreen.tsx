@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, FlatList, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { InitDB } from "../database/database";
+import { InitDB, DeleteTask } from "../database/database";
 import * as SQLite from "expo-sqlite";
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -10,18 +10,40 @@ const db = SQLite.openDatabaseSync("tasks.db");
 export default function HomeScreen({ navigation }: any) {
   const [tasks, setTasks] = useState<any[]>([]);
 
+  // Load danh sách task chưa xoá
   const loadData = async () => {
     await InitDB();
-    const rows = await db.getAllAsync("SELECT * FROM tasks ORDER BY id DESC");
+    const rows = await db.getAllAsync(
+      "SELECT * FROM tasks WHERE deletedAt IS NULL ORDER BY id DESC"
+    );
     setTasks(rows);
   };
 
-  // 🔁 Tự reload mỗi khi quay lại screen
+  // Tự reload khi quay lại screen
   useFocusEffect(
     React.useCallback(() => {
       loadData();
     }, [])
   );
+
+  // Xác nhận xoá
+  const confirmDelete = (id: number) => {
+    Alert.alert(
+      "Xoá khoản chi",
+      "Bạn có chắc chắn muốn xoá khoản này?",
+      [
+        { text: "Huỷ", style: "cancel" },
+        {
+          text: "Xoá",
+          style: "destructive",
+          onPress: async () => {
+            await DeleteTask(id); // soft delete
+            loadData(); // reload danh sách
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -40,13 +62,14 @@ export default function HomeScreen({ navigation }: any) {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.item}
-            onPress={() => navigation.navigate("EditExpense", { task: item })} // ✅ Chuyển sang màn hình sửa
+            onPress={() => navigation.navigate("EditExpense", { task: item })} // nhấn vào mở edit
           >
             <Text style={styles.itemTitle}>{item.title}</Text>
             <Text style={styles.itemAmount}>{item.amount} đ</Text>
           </TouchableOpacity>
         )}
       />
+
     </SafeAreaView>
   );
 }
