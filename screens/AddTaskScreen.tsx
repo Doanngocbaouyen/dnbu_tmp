@@ -1,50 +1,73 @@
-import React, { useRef, useState } from "react";
-import { View, TextInput, TouchableOpacity, Text } from "react-native";
-import { AddTask } from "../database";
-import { useNavigation } from "@react-navigation/native";
+import React, { useRef, useState, useEffect } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { AddTask, InitDB } from "../database/database";
+
+const getCurrentDate = () => {
+  return new Date().toLocaleDateString("vi-VN");
+};
 
 export default function AddTaskScreen() {
-  const navigation = useNavigation();
-  const [text, setText] = useState("");
-  const inputRef = useRef<TextInput>(null);
+  const [title, setTitle] = useState("");
+  const [amount, setAmount] = useState("");
+  const inputTitleRef = useRef<TextInput>(null);
+  const inputAmountRef = useRef<TextInput>(null);
 
-  const handleSave = async () => {
-    if (!text.trim()) return;
+  useEffect(() => {
+    InitDB(); // ✅ Khởi tạo DB khi mở screen
+  }, []);
 
-    await AddTask(text);
+  const saveTask = async () => {
+    if (!title || !amount) {
+      alert("Nhập đủ dữ liệu!");
+      return;
+    }
 
-    setText("");
-    inputRef.current?.clear(); // ✅ clear bằng useRef
-    alert("Đã thêm!");
+    await AddTask(title, Number(amount), "Chi", getCurrentDate());
 
-    navigation.goBack();
+    setTitle("");
+    setAmount("");
+    inputTitleRef.current?.clear();
+    inputAmountRef.current?.clear();
+
+    alert("Thêm thành công ✅");
   };
 
   return (
-    <View style={{ flex: 1, padding: 20 }}>
+    <View style={styles.container}>
+      <Text style={styles.label}>Tên khoản chi</Text>
       <TextInput
-        ref={inputRef}
-        placeholder="Nhập công việc..."
-        style={{
-          borderWidth: 1,
-          borderColor: "#ccc",
-          padding: 12,
-          borderRadius: 8,
-          marginBottom: 20,
-        }}
-        onChangeText={setText}
+        ref={inputTitleRef}
+        style={styles.input}
+        onChangeText={setTitle}
+        placeholder="Nhập nội dung..."
       />
 
-      <TouchableOpacity
-        style={{
-          backgroundColor: "#28A745",
-          padding: 12,
-          borderRadius: 8,
-        }}
-        onPress={handleSave}
-      >
-        <Text style={{ color: "white", textAlign: "center" }}>Save</Text>
+      <Text style={styles.label}>Số tiền</Text>
+      <TextInput
+        ref={inputAmountRef}
+        style={styles.input}
+        onChangeText={setAmount}
+        keyboardType="numeric"
+        placeholder="Nhập số tiền..."
+      />
+
+      <TouchableOpacity style={styles.btn} onPress={saveTask}>
+        <Text style={styles.btnText}>Save</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20, backgroundColor: "#fff" },
+  label: { fontSize: 16, fontWeight: "bold", marginTop: 10 },
+  input: { borderWidth: 1, borderColor: "#aaa", padding: 10, borderRadius: 6 },
+  btn: {
+    backgroundColor: "#0084ff",
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  btnText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+});

@@ -1,19 +1,33 @@
-import * as SQLite from 'expo-sqlite';
+import * as SQLite from "expo-sqlite";
 
+// ✅ API mới: đồng bộ
 const db = SQLite.openDatabaseSync("tasks.db");
 
-// Tạo table nếu chưa có
+// ✅ Tạo bảng (async)
 export const InitDB = async () => {
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS tasks (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL
-    )
+      title TEXT NOT NULL,
+      amount REAL NOT NULL,
+      type TEXT NOT NULL,
+      createdAt TEXT NOT NULL
+    );
   `);
 };
 
-export const AddTask = async (title: string) => {
-  await db.runAsync(`INSERT INTO tasks (title) VALUES (?)`, [title]);
+// ✅ Thêm dữ liệu (async)
+export const AddTask = async (
+  title: string,
+  amount: number,
+  type: string,
+  createdAt: string
+) => {
+  await db.runAsync(
+    `INSERT INTO tasks (title, amount, type, createdAt) VALUES (?, ?, ?, ?);`,
+    [title, amount, type, createdAt]
+  );
+  console.log("✅ Task added successfully");
 };
 
 export default db;

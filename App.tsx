@@ -1,49 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { SafeAreaView, View, Text, StyleSheet } from "react-native";
-import ExpenseItem from "./components/ExpenseItem";
+import HomeScreen from "./screens/HomeScreen";
+import AddExpenseScreen from "./screens/AddTaskScreen";
+import { InitDB } from "./database/database";
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
+  useEffect(() => {
+    InitDB();
+  }, []);
+
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
-        {/* Tiêu đề */}
-        <Text style={styles.title}>EXPENSE TRACKER</Text>
-
-        {/* Danh sách test hiển thị Item */}
-        <View style={styles.list}>
-          <ExpenseItem
-            title="Đi chợ"
-            amount={150000}
-            createdAt="08/11/2025"
-            type="Chi"
-          />
-          <ExpenseItem
-            title="Lương tháng"
-            amount={10000000}
-            createdAt="01/11/2025"
-            type="Thu"
-          />
-        </View>
-      </SafeAreaView>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="AddExpense" component={AddExpenseScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#ffffff",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginTop: 10,
-  },
-  list: {
-    width: "100%",
-    paddingHorizontal: 20,
-    marginTop: 20,
-  },
-});
