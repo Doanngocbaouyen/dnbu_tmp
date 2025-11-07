@@ -1,61 +1,49 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-export interface ExpenseItemProps {
+interface Props {
   title: string;
   amount: number;
+  type: string;
   createdAt: string;
-  type: "Thu" | "Chi";
 }
 
-const ExpenseItem: React.FC<ExpenseItemProps> = ({
-  title,
-  amount,
-  createdAt,
-  type,
-}) => {
-  const isIncome = type === "Thu";
-
+const ExpenseItem = ({ title, amount, type, createdAt }: Props) => {
   return (
-    <View style={[styles.container, isIncome ? styles.income : styles.expense]}>
+    <View style={styles.item}>
       <View>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.date}>{createdAt}</Text>
       </View>
-      <Text style={styles.amount}>
-        {isIncome ? "+" : "-"}{amount.toLocaleString()}đ
+
+      <Text
+        style={[
+          styles.amount,
+          type === "Thu" ? styles.income : styles.expense,
+        ]}
+      >
+        {type === "Thu" ? "+" : "-"}
+        {amount.toLocaleString("vi-VN")}đ
       </Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 15,
-    marginVertical: 8,
+  item: {
+    width: "100%",
+    backgroundColor: "#f2f2f2",
+    padding: 12,
     borderRadius: 10,
+    marginBottom: 10,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
   },
-  income: {
-    backgroundColor: "#c5f6c7",
-  },
-  expense: {
-    backgroundColor: "#f8c5c5",
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  date: {
-    fontSize: 12,
-    color: "#555",
-  },
-  amount: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
+  title: { fontSize: 16, fontWeight: "600", marginBottom: 2 },
+  date: { fontSize: 12, color: "#555" },
+  amount: { fontSize: 16, fontWeight: "bold" },
+  income: { color: "green" },
+  expense: { color: "red" },
 });
 
 export default ExpenseItem;
