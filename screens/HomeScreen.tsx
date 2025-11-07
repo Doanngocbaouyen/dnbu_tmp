@@ -3,20 +3,25 @@ import { View, Text, TouchableOpacity, FlatList, StyleSheet } from "react-native
 import { SafeAreaView } from "react-native-safe-area-context";
 import { InitDB } from "../database/database";
 import * as SQLite from "expo-sqlite";
+import { useFocusEffect } from "@react-navigation/native";
 
 const db = SQLite.openDatabaseSync("tasks.db");
 
 export default function HomeScreen({ navigation }: any) {
   const [tasks, setTasks] = useState<any[]>([]);
 
-  useEffect(() => {
-    const loadData = async () => {
-      await InitDB();
-      const rows = await db.getAllAsync("SELECT * FROM tasks ORDER BY id DESC");
-      setTasks(rows);
-    };
-    loadData();
-  }, []);
+  const loadData = async () => {
+    await InitDB();
+    const rows = await db.getAllAsync("SELECT * FROM tasks ORDER BY id DESC");
+    setTasks(rows);
+  };
+
+  // 🔁 Tự reload mỗi khi quay lại screen
+  useFocusEffect(
+    React.useCallback(() => {
+      loadData();
+    }, [])
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -33,10 +38,13 @@ export default function HomeScreen({ navigation }: any) {
         data={tasks}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <View style={styles.item}>
+          <TouchableOpacity
+            style={styles.item}
+            onPress={() => navigation.navigate("EditExpense", { task: item })} // ✅ Chuyển sang màn hình sửa
+          >
             <Text style={styles.itemTitle}>{item.title}</Text>
             <Text style={styles.itemAmount}>{item.amount} đ</Text>
-          </View>
+          </TouchableOpacity>
         )}
       />
     </SafeAreaView>

@@ -5,6 +5,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import HomeScreen from "./screens/HomeScreen";
 import AddExpenseScreen from "./screens/AddTaskScreen";
 import { InitDB } from "./database/database";
+import EditTaskScreen from "./screens/EditTaskScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +20,7 @@ export default function App() {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="AddExpense" component={AddExpenseScreen} />
+          <Stack.Screen name="EditExpense" component={EditTaskScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

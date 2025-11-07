@@ -30,4 +30,17 @@ export const AddTask = async (
   console.log("✅ Task added successfully");
 };
 
+// ✅ Cập nhật task theo id
+export const UpdateTask = async (
+  id: number,
+  title: string,
+  amount: number
+) => {
+  await db.runAsync(
+    `UPDATE tasks SET title = ?, amount = ? WHERE id = ?`,
+    [title, amount, id]
+  );
+};
+
+
 export default db;
